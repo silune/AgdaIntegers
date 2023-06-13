@@ -2,7 +2,7 @@
 
 -- Definition for propositional equality with some properties
 
-{-# OPTIONS --rewriting #-}
+{-# OPTIONS --prop --rewriting #-}
 
 open import Logic
 
@@ -16,11 +16,16 @@ module Equality where
 
   -- Equality
 
-  data _≡_ {l}{A : Set l}(x : A) : A → Set l where
+  data _≡_ {l}{A : Set l}(x : A) : A → Prop l where
     refl : x ≡ x
 
   {-# BUILTIN REWRITE _≡_ #-}
 
+  record Lift {l}(A : Prop l) : Set l where
+    constructor ⟪_⟫
+    field unfold : A
+  open Lift public
+    
   -- Properities
 
   symetry : ∀{l}{A : Set l}{x y : A} → x ≡ y → y ≡ x
@@ -29,9 +34,6 @@ module Equality where
   transitivity : ∀{l}{A : Set l}{x y z : A} → x ≡ y → y ≡ z → x ≡ z
   transitivity refl refl = refl
 
-  uniqueness : ∀{l}{A : Set l}{x y : A} → (p : x ≡ y) → (p' : x ≡ y) → p ≡ p'
-  uniqueness refl refl = refl
-
   _≡⟨_⟩_ : ∀{l}{A : Set l}{y z : A} → (x : A) → x ≡ y → y ≡ z → x ≡ z
   x ≡⟨ eqy ⟩ eqz = transitivity eqy eqz
 
@@ -39,23 +41,10 @@ module Equality where
   cong⟨_⟩ : ∀{l}{A : Set l}{l'}{B : Set l'}(f : A → B){x y : A} → x ≡ y → f x ≡ f y
   cong⟨ f ⟩ refl = refl
   
-  -- (lemma 2.3.2 HoTT)
-  transp⟨_⟩ : ∀{l}{A : Set l}{l'}(P : A → Set l'){x y : A} → x ≡ y → P x → P y
-  transp⟨ P ⟩ refl = id
+  -- (lemma 2.3.2 HoTT) (need to be postulate when working with Prop instead of Set ?)
+  postulate transp⟨_⟩ : ∀{l}{A : Set l}{l'}(P : A → Set l'){x y : A} → x ≡ y → P x → P y
+  -- transp⟨ P ⟩ refl px = px
 
-  -- (lemma 2.3.4 HoTT)
-  congd⟨_⟩ : ∀{l}{A : Set l}{l'}(P : A → Set l')(f : (a : A) → P a){x y : A} → (eq : x ≡ y) → (transp⟨ P ⟩ eq) (f x) ≡ f y 
-  congd⟨ P ⟩ f refl = refl
-
-  -- (theorem 2.7.2 HoTT)
-  transpGen : ∀{l}{A : Set l}{l'}{P : A → Set l'} → (w w' : ∃ (λ (x : A) → P x)) →
-                                               ((w ≡ w') → ∃ (λ (p : pr₁ w ≡ pr₁ w') → transp⟨ P ⟩ p (pr₂ w) ≡ (pr₂ w')))
-  transpGen _ _ refl = ⟨ refl , refl ⟩
-
-  postulate transpEq : ∀{l}{A : Set l}{l'}{B : Set l'}{f g : A → B}{x y : A} →
-                       (px : f(x) ≡ g(x)) → (py : f(y) ≡ g(y)) → (eq : x ≡ y) → (transp⟨ (λ a → f(a) ≡ g(a)) ⟩ eq) px ≡ py
-  -- transpEq refl refl refl = refl                                              (should working ?)
-  -- transpEq {x = x}{y = y} _ _ refl = pr₂ (transpGen ⟨ x , _ ⟩ ⟨ y , _ ⟩ refl) (also not working ?)
 
   -- Functional extensionality (Axiom 2.9.3 HoTT)
 

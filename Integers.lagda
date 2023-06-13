@@ -66,7 +66,7 @@ record DepModel {l} : Set (lsuc l) where
     Zero•    : Z• I.Zero
     Suc•     : ∀{i} → Z• i → Z• (I.Suc i)
     Pred•    : ∀{i} → Z• i → Z• (I.Pred i)
-    SucPred• : ∀{i} → (i• : Z• i) → (transp⟨ Z• ⟩ I.SucPred (Suc• (Pred• i•))) ≡ i•
+    SucPred• : ∀{i} → (i• : Z• i) → transp⟨ Z• ⟩ I.SucPred (Suc• (Pred• i•)) ≡ i•
     PredSuc• : ∀{i} → (i• : Z• i) → (transp⟨ Z• ⟩ I.PredSuc (Pred• (Suc• i•))) ≡ i•
   postulate
     ind : (i : I.Z) → Z• i
@@ -90,96 +90,107 @@ Using induction we can prove some properites like :
 
 +assocProof : I.Z → I.Z → DepModel
 +assocProof b c = record
-  { Z•       = λ a → (a + b) + c ≡ a + (b + c)
-  ; Zero•    = refl
-  ; Suc•     = λ HR → cong⟨ I.Suc ⟩ HR
-  ; Pred•    = λ HR → cong⟨ I.Pred ⟩ HR
-  ; SucPred• = λ i• → transpEq (cong⟨ I.Suc ⟩ (cong⟨ I.Pred ⟩ i•)) i• I.SucPred
-  ; PredSuc• = λ i• → transpEq (cong⟨ I.Pred ⟩ (cong⟨ I.Suc ⟩ i•)) i• I.PredSuc
+  { Z•       = λ a → Lift ((a + b) + c ≡ a + (b + c))
+  ; Zero•    = ⟪ refl ⟫
+  ; Suc•     = λ HR → ⟪ cong⟨ I.Suc ⟩ (unfold HR) ⟫
+  ; Pred•    = λ HR → ⟪ cong⟨ I.Pred ⟩ (unfold HR) ⟫
+  ; SucPred• = λ _ → refl 
+  ; PredSuc• = λ _ → refl
   }
 
 +assoc : (a b c : I.Z) → (a + b) + c ≡ a + (b + c)
-+assoc a b c = DepModel.ind (+assocProof b c) a 
++assoc a b c = unfold (DepModel.ind (+assocProof b c) a)
 
 -- Neutral Element for Addition
 
 +NeutralRightProof : DepModel
 +NeutralRightProof = record
-  { Z•       = λ i → (i + I.Zero) ≡ i
-  ; Zero•    = refl
-  ; Suc•     = λ HR → cong⟨ I.Suc ⟩ HR
-  ; Pred•    = λ HR → cong⟨ I.Pred ⟩ HR
-  ; SucPred• = λ i• → transpEq (cong⟨ I.Suc ⟩ (cong⟨ I.Pred ⟩ i•)) i• I.SucPred
-  ; PredSuc• = λ i• → transpEq (cong⟨ I.Pred ⟩ (cong⟨ I.Suc ⟩ i•)) i• I.PredSuc
+  { Z•       = λ i → Lift ((i + I.Zero) ≡ i)
+  ; Zero•    = ⟪ refl ⟫
+  ; Suc•     = λ HR → ⟪ cong⟨ I.Suc ⟩ (unfold HR) ⟫
+  ; Pred•    = λ HR → ⟪ cong⟨ I.Pred ⟩ (unfold HR) ⟫
+  ; SucPred• = λ i• → refl
+  ; PredSuc• = λ i• → refl
   }
 
 +Neutral : (i : I.Z) → ((i + I.Zero) ≡ i) ∧ ((I.Zero + i) ≡ i)
-+Neutral i = (DepModel.ind +NeutralRightProof i),
-              refl
++Neutral i = (unfold (DepModel.ind +NeutralRightProof i)),
+             refl
 
--- Lemma Commutativity
 
 +commLemmaSucProof : I.Z → DepModel
 +commLemmaSucProof b = record
- { Z• = λ a → (I.Suc a) + b ≡ a + (I.Suc b)
- ; Zero• = refl
- ; Suc•     = λ HR → cong⟨ I.Suc ⟩ HR
- ; Pred•    = λ {a} HR → ((I.Suc (I.Pred a)) + b) ≡⟨ I.SucPred ⟩
+ { Z• = λ a → Lift ((I.Suc a) + b ≡ a + (I.Suc b))
+ ; Zero• = ⟪ refl ⟫
+ ; Suc•     = λ {⟪ HR ⟫ → ⟪ cong⟨ I.Suc ⟩ HR ⟫}
+ ; Pred•    = λ {a} HR → ⟪ ((I.Suc (I.Pred a)) + b) ≡⟨ I.SucPred ⟩
                           (a + b)                 ≡⟨ symetry I.PredSuc ⟩
-                          (cong⟨ I.Pred ⟩ HR)
- ; SucPred• = {!!}
- ; PredSuc• = {!!}
+                          (cong⟨ I.Pred ⟩ (unfold HR)) ⟫
+ ; SucPred• = λ _ → refl
+ ; PredSuc• = λ _ → refl
  }
 
 +commLemmaSuc : (a b : I.Z) → (I.Suc a) + b ≡ a + (I.Suc b)
-+commLemmaSuc a b = DepModel.ind (+commLemmaSucProof b) a
++commLemmaSuc a b = unfold (DepModel.ind (+commLemmaSucProof b) a)
 
 +commLemmaPredProof : I.Z → DepModel
 +commLemmaPredProof b = record
- { Z• = λ a → (I.Pred a) + b ≡ a + (I.Pred b)
- ; Zero• = refl
- ; Suc•  = λ {a} HR → ((I.Pred (I.Suc a)) + b) ≡⟨ I.PredSuc ⟩
-                          (a + b)                 ≡⟨ symetry I.SucPred ⟩
-                          (cong⟨ I.Suc ⟩ HR)
- ; Pred• = λ HR → cong⟨ I.Pred ⟩ HR
- ; SucPred• = {!!}
- ; PredSuc• = {!!}
+ { Z• = λ a → Lift ((I.Pred a) + b ≡ a + (I.Pred b))
+ ; Zero• = ⟪ refl ⟫
+ ; Suc•  = λ {a} HR → ⟪ ((I.Pred (I.Suc a)) + b) ≡⟨ I.PredSuc ⟩
+                           (a + b)                 ≡⟨ symetry I.SucPred ⟩
+                           (cong⟨ I.Suc ⟩ (unfold HR)) ⟫
+ ; Pred• = λ HR → ⟪ cong⟨ I.Pred ⟩ (unfold HR) ⟫
+ ; SucPred• = λ _ → refl
+ ; PredSuc• = λ _ → refl
  }
 
 +commLemmaPred : (a b : I.Z) → (I.Pred a) + b ≡ a + (I.Pred b)
-+commLemmaPred a b = DepModel.ind (+commLemmaPredProof b) a
++commLemmaPred a b = unfold (DepModel.ind (+commLemmaPredProof b) a)
 
 +commProof : I.Z → DepModel
 +commProof b = record
-  { Z• = λ a → a + b ≡ b + a
-  ; Zero• = symetry (DepModel.ind +NeutralRightProof b)
-  ; Suc• = λ {a} HR → ((I.Suc a) + b) ≡⟨ cong⟨ I.Suc ⟩ HR ⟩ (+commLemmaSuc b a)
-  ; Pred• = λ {a} HR → ((I.Pred a) + b) ≡⟨ cong⟨ I.Pred ⟩ HR ⟩ (+commLemmaPred b a)
-  ; SucPred• = {!!}
-  ; PredSuc• = {!!}
+  { Z• = λ a → Lift (a + b ≡ b + a)
+  ; Zero• = ⟪ symetry (unfold (DepModel.ind +NeutralRightProof b)) ⟫
+  ; Suc• = λ {a} HR → ⟪ ((I.Suc a) + b) ≡⟨ cong⟨ I.Suc ⟩ (unfold HR) ⟩ (+commLemmaSuc b a) ⟫
+  ; Pred• = λ {a} HR → ⟪ ((I.Pred a) + b) ≡⟨ cong⟨ I.Pred ⟩ (unfold HR) ⟩ (+commLemmaPred b a) ⟫
+  ; SucPred• = λ _ → refl
+  ; PredSuc• = λ _ → refl
   }
 
 +comm : (a b : I.Z) → a + b ≡ b + a
-+comm a b = DepModel.ind (+commProof b) a
++comm a b = unfold (DepModel.ind (+commProof b) a)
 
 -- Inverse for Addition
 
+negation : Model
+negation = record
+  { Z = I.Z
+  ; Zero = I.Zero
+  ; Suc = λ i → I.Pred i
+  ; Pred = λ i → I.Suc i
+  ; SucPred = I.PredSuc
+  ; PredSuc = I.SucPred
+  }
+module negation = Model negation
+
+-_ : I.Z → I.Z
+-_ = negation.⟦_⟧
+
 +InverseProof : DepModel
 +InverseProof = record
-  { Z• = λ i → ∃ (λ ni → i + ni ≡ I.Zero)
-  ; Zero• = ⟨ I.Zero , refl ⟩
-  ; Suc• = λ { {i} ⟨ ni , HR ⟩ → ⟨ (I.Pred ni) ,
-                                 ((I.Suc i) + (I.Pred ni) ≡⟨ cong⟨ I.Suc ⟩ (symetry (+commLemmaPred i ni)) ⟩
-                                 (I.Suc (I.Pred (i + ni))) ≡⟨ I.SucPred ⟩ HR) ⟩}
-  ; Pred• = λ { {i} ⟨ ni , HR ⟩ → ⟨ (I.Suc ni) ,
-                                 ((I.Pred i) + (I.Suc ni) ≡⟨ cong⟨ I.Pred ⟩ (symetry (+commLemmaSuc i ni)) ⟩
-                                 (I.Pred (I.Suc (i + ni))) ≡⟨ I.PredSuc ⟩ HR) ⟩}
-  ; SucPred• = {!!}
-  ; PredSuc• = {!!}
+  { Z• = λ i → Lift (- i + i ≡ I.Zero)
+  ; Zero• = ⟪ refl ⟫
+  ; Suc• = λ {i} HR → ⟪ - (I.Suc i) + (I.Suc i) ≡⟨ cong⟨ I.Pred ⟩ (symetry (+commLemmaSuc (- i) i)) ⟩
+                        I.Pred (I.Suc (- i + i)) ≡⟨ I.PredSuc ⟩ (unfold HR) ⟫
+  ; Pred• = λ {i} HR → ⟪ - (I.Pred i) + (I.Pred i) ≡⟨ cong⟨ I.Suc ⟩ (symetry (+commLemmaPred (- i) i)) ⟩
+                        I.Suc (I.Pred (- i + i)) ≡⟨ I.SucPred ⟩ (unfold HR) ⟫
+  ; SucPred• = λ _ → refl
+  ; PredSuc• = λ _ → refl
   }
 
-+Inverse : (i : I.Z) → ∃ λ (ni : I.Z) → (i + ni ≡ I.Zero)
-+Inverse i = DepModel.ind +InverseProof i
++Inverse : (i : I.Z) → (- i + i ≡ I.Zero)
++Inverse i = unfold (DepModel.ind +InverseProof i)
 
 \end{code}
 
@@ -283,15 +294,15 @@ NormStability (+Nat (succ i)) =
 
 InclusionStabilityProof : DepModel
 InclusionStabilityProof = record
-  { Z•       = λ i → ⌜ norm i ⌝ ≡ i
-  ; Zero•    = refl
-  ; Suc•     = λ {i} i• → ⌜ norm (I.Suc i) ⌝ ≡⟨ normSucMorph (norm i) ⟩ (cong⟨ I.Suc ⟩ i•)
-  ; Pred•    = λ {i} i• → ⌜ norm (I.Pred i) ⌝ ≡⟨ normPredMorph (norm i) ⟩ (cong⟨ I.Pred ⟩ i•)
-  ; SucPred• = {!!}
-  ; PredSuc• = {!!}
+  { Z•       = λ i → Lift (⌜ norm i ⌝ ≡ i)
+  ; Zero•    = ⟪ refl ⟫
+  ; Suc•     = λ {i} i• → ⟪ ⌜ norm (I.Suc i) ⌝ ≡⟨ normSucMorph (norm i) ⟩ (cong⟨ I.Suc ⟩ (unfold i•)) ⟫
+  ; Pred•    = λ {i} i• → ⟪ ⌜ norm (I.Pred i) ⌝ ≡⟨ normPredMorph (norm i) ⟩ (cong⟨ I.Pred ⟩ (unfold i•)) ⟫
+  ; SucPred• = λ _ → refl
+  ; PredSuc• = λ _ → refl
   }
 
 InclusionStability : (i : I.Z) → ⌜ norm i ⌝ ≡ i
-InclusionStability = DepModel.ind InclusionStabilityProof
+InclusionStability i = unfold (DepModel.ind InclusionStabilityProof i)
 
 \end{code}
