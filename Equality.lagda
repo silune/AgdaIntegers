@@ -54,7 +54,8 @@ module Equality where
 
   postulate transpEq : ∀{l}{A : Set l}{l'}{B : Set l'}{f g : A → B}{x y : A} →
                        (px : f(x) ≡ g(x)) → (py : f(y) ≡ g(y)) → (eq : x ≡ y) → (transp⟨ (λ a → f(a) ≡ g(a)) ⟩ eq) px ≡ py
-  -- transpEq {x = x}{y = y} _ _ refl = pr₂ (transpGen ⟨ x , _ ⟩ ⟨ y , _ ⟩ refl)
+  -- transpEq refl refl refl = refl                                              (should working ?)
+  -- transpEq {x = x}{y = y} _ _ refl = pr₂ (transpGen ⟨ x , _ ⟩ ⟨ y , _ ⟩ refl) (also not working ?)
 
   -- Functional extensionality (Axiom 2.9.3 HoTT)
 
