@@ -45,6 +45,16 @@ module Equality where
   postulate transp⟨_⟩ : ∀{l}{A : Set l}{l'}(P : A → Set l'){x y : A} → x ≡ y → P x → P y
   -- transp⟨ P ⟩ refl px = px
 
+  -- (why ?)
+  postulate transprefl : ∀{l}{A : Set l}{l'}{P : A → Set l'}{a : A}{e : a ≡ a}{p : P a} → transp⟨ P ⟩ e p ≡ p
+  {-# REWRITE transprefl #-}
+
+  -- (lemma 2.3.5 HoTT)
+  transpconst⟨_⟩ : ∀{l}{A : Set l}{l'}{P : Set l'}{x y : A}{eq : x ≡ y} → (p : P) → transp⟨ (λ _ → P) ⟩ eq p ≡ p
+  transpconst⟨_⟩ {eq = refl} p = refl
+
+  -- How to do this ??
+  postulate transpEq : ∀{l}{A : Set l}{l'}{P : Set l'}{x y : A}{eq : x ≡ y}{p p' : P} -> p ≡ p' → transp⟨ (λ _ → P) ⟩ eq p ≡ p'
 
   -- Functional extensionality (Axiom 2.9.3 HoTT)
 

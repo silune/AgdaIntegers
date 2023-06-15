@@ -32,11 +32,4 @@ module Logic where
 
   -- Existential Quantifier
 
-  -- record ∃ {l}{A : Set l}{l'} (B : A → Prop l) : Prop (l ⊔ l') where
-  --   constructor ⟨_,_⟩
-  --   field
-  --     pr₁ : A
-  --     pr₂ : B (pr₁)
-  -- open ∃ public
-
- \end{code}
+   \end{code}
