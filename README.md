@@ -1,3 +1,6 @@
-# Agda Integers
+# Integers as QIT
 
-Implementations of QIT's Integers in Agda to get started with Agda, Quotient Inductive Type and normalisation proofs.
+Implementations of Integers as QIT in Agda to get started with :
+  - Agda and inductive proof (Z is a ring)
+  - Quotient Inductive Type
+  - Normalisation proofs
