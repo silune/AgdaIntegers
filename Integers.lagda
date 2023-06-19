@@ -83,12 +83,6 @@ record Model {l} : Set (lsuc l) where
   module ModelRec = DepModel ModelRec
   ⟦_⟧    : I.Z → Z
   ⟦_⟧    = ModelRec.ind
-  ⟦Zero⟧ : ⟦ I.Zero ⟧ ≡ Zero
-  ⟦Zero⟧ = refl
-  ⟦Suc⟧  : ∀{i} → ⟦ I.Suc i ⟧ ≡ Suc ⟦ i ⟧
-  ⟦Suc⟧  = refl
-  ⟦Pred⟧ : ∀{i} → ⟦ I.Pred i ⟧ ≡ Pred ⟦ i ⟧
-  ⟦Pred⟧ = refl
 
 -- The model is usefull for its recursor :
   -- it let us define functions using pattern matching
