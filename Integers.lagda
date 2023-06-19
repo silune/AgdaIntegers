@@ -77,9 +77,8 @@ record Model {l} : Set (lsuc l) where
     ; Zero• = Zero
     ; Suc• = Suc
     ; Pred• = Pred
-    -- How to do this ???
-    ; SucPred• = λ i• → {!!}
-    ; PredSuc• = λ i• → {!!}
+    ; SucPred• = λ {i} i• → transpEq {_}{I.Z}{_}{_}{I.Suc (I.Pred i)}{i}{I.SucPred} SucPred
+    ; PredSuc• = λ {i} i• → transpEq {_}{I.Z}{_}{_}{I.Pred (I.Suc i)}{i}{I.PredSuc} PredSuc
     }
   module ModelRec = DepModel ModelRec
   ⟦_⟧    : I.Z → Z
